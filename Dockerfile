@@ -18,6 +18,8 @@ WORKDIR /app
 COPY CMakeLists.txt .
 COPY src/ ./src/
 COPY config/ ./config/
+COPY tools/ ./tools/
+COPY tests/ ./tests/
 
 # Build using CMake
 RUN mkdir build && cd build && \
