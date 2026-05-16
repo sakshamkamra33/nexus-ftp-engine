@@ -1,10 +1,18 @@
-# NexusFTP Engine 🚀
+# 🚀 NexusFTP Engine
 
-NexusFTP is a high-performance, low-level FTP server built entirely from scratch in C++14. It is designed to demonstrate deep understanding of Systems Programming, multithreading, raw TCP/IP socket manipulation, and cross-platform architecture (Win32 & POSIX). 
+![C++14](https://img.shields.io/badge/C++-14-blue.svg?style=for-the-badge&logo=c%2B%2B)
+![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED.svg?style=for-the-badge&logo=docker)
+![AWS](https://img.shields.io/badge/AWS-EC2%20Deployed-FF9900.svg?style=for-the-badge&logo=amazon-aws)
+![Platform](https://img.shields.io/badge/Platform-Win32%20%7C%20POSIX-success.svg?style=for-the-badge)
 
-It is currently containerized via Docker and deployed to an AWS EC2 Ubuntu instance.
+NexusFTP is a high-performance, low-level FTP server built entirely from scratch in **C++14**. It is designed to demonstrate a deep understanding of Systems Programming, raw TCP/IP socket manipulation, multithreading synchronization, and zero-copy data transfer architectures.
 
-## 🌟 Live Demo
+By avoiding high-level networking frameworks (like Boost.Asio), this engine relies purely on OS-level primitives (Win32 API & POSIX) to achieve maximum I/O throughput and minimal CPU overhead.
+
+---
+
+## 🌟 Live Demo & Telemetry
+
 The FTP server features a custom-built, embedded HTTP engine that serves a real-time React-style telemetry dashboard using vanilla HTML/CSS and CSS Grid!
 
 👉 **View the Live Dashboard:** [http://204.236.201.82:8080](http://204.236.201.82:8080)
@@ -22,9 +30,88 @@ You can connect to the raw C++ FTP socket using your computer's built-in termina
    - **Password:** `guest`
 4. Try typing `ls` to request a directory listing, then look at your dashboard to see the active socket count increase!
 
-## ⚙️ Core Technical Features
-* **Raw Socket API:** Handled network communication natively in C++ without high-level networking libraries.
-* **Custom Concurrency:** Built a robust Thread Pool using `std::mutex` and `std::condition_variable` to manage hundreds of concurrent client connections.
-* **Zero-Copy Architecture:** Integrated OS-level optimization hooks like `sendfile()` (Linux) and `TransmitFile()` (Windows) for maximum bandwidth throughput.
-* **Cloud & DevOps:** Engineered a multi-stage Dockerfile to compile natively on Linux, resulting in a minimal memory footprint, deployed via AWS EC2.
-* **Security Subsystem:** Includes SHA-256 hashed password authentication, environment variable secret injection, and anti-brute-force connection rejection.
+---
+
+## 🏗️ System Architecture
+
+NexusFTP is built on a non-blocking Acceptor model that dispatches incoming TCP connections to a pre-allocated Worker Thread Pool, isolating the I/O of active file transfers from the primary command channel.
+
+```mermaid
+graph TD
+    Client[FTP Client] <-->|TCP Port 21| Acceptor[Main Acceptor Loop]
+    Acceptor -->|Dispatches Socket| Queue[Connection Queue]
+    
+    subgraph Custom Thread Pool
+        Queue -->|CondVar Wakeup| Worker1[Worker Thread 1]
+        Queue -->|CondVar Wakeup| Worker2[Worker Thread 2]
+        Queue -->|CondVar Wakeup| WorkerN[Worker Thread N]
+    end
+    
+    Worker1 -->|Command Processing| Session1[FTP Session Context]
+    Worker2 -->|Command Processing| Session2[FTP Session Context]
+    
+    Session1 -->|Read/Write| VFS[Virtual File System]
+    Session2 -->|Zero-Copy| VFS
+    
+    subgraph OS Kernel Layer
+        VFS -.->|sendfile / TransmitFile| NetworkCard[NIC Controller]
+    end
+    
+    AdminBrowser[Web Dashboard] <-->|HTTP Port 8080| Admin[Embedded HTTP Admin Server]
+    Admin -.->|Reads Telemetry| Session1
+```
+
+---
+
+## 🧠 Core Engineering Achievements
+
+### 1. Raw Socket Manipulation
+Handled all network communication natively. Implemented protocol-level parsing for RFC959 (FTP) over raw byte-streams. Successfully negotiated secondary Passive Data Channels (`PASV`) for NAT-friendly data routing.
+
+### 2. Custom Thread Pool & Concurrency
+Avoided `std::async` overhead by engineering a robust Thread Pool from scratch. Utilized `std::mutex`, `std::condition_variable`, and lock-free atomic counters (`std::atomic`) to manage hundreds of concurrent client connections without race conditions or memory leaks.
+
+### 3. Zero-Copy Architecture Optimization
+Integrated OS-level optimization hooks to bypass user-space memory entirely during large file transfers:
+- **Linux:** Utilized `sendfile()` syscall.
+- **Windows:** Utilized `TransmitFile()` Win32 API.
+This allows the CPU to instruct the hard drive to send data directly to the Network Interface Card (NIC), achieving near-native wire speeds.
+
+### 4. Cross-Platform Abstraction
+Designed a unified `platform.cpp` abstraction layer, allowing the engine to compile natively and optimally on both Windows (MSVC/MinGW) and Linux (GCC), resolving deep architectural differences between Win32 threads and POSIX threads.
+
+### 5. Embedded HTTP Engine
+Wrote a custom HTTP/1.1 response parser and generator to serve a modern Glassmorphism dashboard over port 8080 directly from the C++ binary—no NGINX or Apache required.
+
+---
+
+## 🔒 Security Implementation
+- **Cryptographic Authentication:** Implemented custom SHA-256 password hashing. Passwords are never stored in plaintext.
+- **Environment Secrets:** Integrated `std::getenv` for injecting cloud secrets during runtime, preventing sensitive data exposure in source control.
+- **Thread-Safe Telemetry:** Protected telemetry data (active connections, bytes transferred) using strict mutex-locking patterns to prevent data corruption during simultaneous read/write operations from the HTTP Admin thread and FTP Worker threads.
+
+---
+
+## 🛠️ Local Development & Deployment
+
+The application is fully containerized using a multi-stage Docker build, ensuring a minuscule runtime footprint.
+
+### Build via Docker
+```bash
+docker build -t nexus-ftp .
+docker run -d \
+  --name nexus-ftp-server \
+  -e ADMIN_PASSWORD="your_secret_key" \
+  -p 21:21 \
+  -p 8080:8080 \
+  -p 50000-50100:50000-50100 \
+  nexus-ftp
+```
+
+### Build from Source (CMake)
+```bash
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j$(nproc) ftp_server
+./ftp_server --config ../config/server.conf
+```
