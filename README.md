@@ -175,6 +175,14 @@ nexus-ftp-engine/
 
 ---
 
+## 🚀 Future Roadmap
+- [ ] **SSL/TLS Encryption (FTPS):** Integrate OpenSSL to secure the command and data channels against packet sniffing.
+- [ ] **IPv6 Support:** Upgrade the socket bindings to support `AF_INET6` alongside IPv4.
+- [ ] **Dashboard Auth:** Transition the Embedded HTTP dashboard from basic URL keys to JWT session tokens.
+- [ ] **Rate Limiting:** Implement a token-bucket algorithm to prevent network spam or basic DDoS attacks on Port 21.
+
+---
+
 ## 📜 License
 
 This project is open-source and available under the **MIT License**.
