@@ -63,15 +63,8 @@ void AdminServer::loop() {
         platform::SocketHandle clientSock = platform::acceptConnection(listenSocket_.get());
         if (clientSock == platform::kInvalidSocket) continue;
 
-        // Security: Only allow local connections
+        // Security: Removed local-only restriction to allow public dashboard access
         std::string peerIp = platform::getPeerIp(clientSock);
-        if (peerIp != "127.0.0.1" && peerIp != "::1") {
-            LOG_WARN("Admin", "Rejected remote admin attempt from " + peerIp);
-            std::string msg = "Access Denied.\n";
-            platform::sendData(clientSock, msg.c_str(), (int)msg.size());
-            platform::closeSocket(clientSock);
-            continue;
-        }
 
         // Handle client synchronously (admin traffic is low)
         handleClient(clientSock);
