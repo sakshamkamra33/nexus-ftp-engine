@@ -7,6 +7,7 @@
 #include <sstream>
 #include <cstring>
 #include <algorithm>
+#include <cstdlib>
 
 namespace ftp {
 
@@ -81,8 +82,13 @@ void AdminServer::handleClient(platform::SocketHandle client) {
     std::string request(buf, n);
     if (request.find("GET") != 0) return; // Only accept GET requests
 
-    // Check if it's a shutdown request
-    bool doStop = (request.find("GET /stop ") != std::string::npos);
+    // Security: Shutdown requires admin password from Environment Variable
+    const char* envPass = std::getenv("ADMIN_PASSWORD");
+    std::string expectedPass = envPass ? envPass : "admin123"; // fallback
+    
+    std::string stopTarget = "GET /stop?key=" + expectedPass + " ";
+    bool doStop = (request.find(stopTarget) != std::string::npos);
+    bool invalidStop = !doStop && (request.find("GET /stop") != std::string::npos);
 
     std::ostringstream html;
     html << "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>NexusFTP Dashboard</title>"
@@ -115,7 +121,9 @@ void AdminServer::handleClient(platform::SocketHandle client) {
          << "<div class='header'><h1>NexusFTP Engine</h1><div class='subtitle'>Live Real-Time Telemetry</div></div>";
 
     if (doStop) {
-        html << "<div style='text-align:center; padding: 40px;'><h2 style='color:var(--danger); font-size: 2rem;'>Initiating Graceful Shutdown...</h2><p style='color:#94a3b8;'>Flushing sockets and killing thread pool safely.</p></div>";
+        html << "<div style='text-align:center; padding: 40px;'><h2 style='color:var(--success); font-size: 2rem;'>Authentication Successful</h2><p style='color:#94a3b8;'>Initiating graceful shutdown. Flushing sockets and killing thread pool safely.</p></div>";
+    } else if (invalidStop) {
+        html << "<div style='text-align:center; padding: 40px;'><h2 style='color:var(--danger); font-size: 2rem;'>Authentication Failed</h2><p style='color:#94a3b8;'>Invalid or missing administrator password.</p><br><a href='/' class='btn btn-primary'>Return to Dashboard</a></div>";
     } else {
         html << "<div class='grid'>"
              << "<div class='stat-card success'><div class='stat-title'>Active Sockets</div><div class='stat-value'>" << ctx_.activeConnections.load() << "</div></div>"
@@ -125,7 +133,7 @@ void AdminServer::handleClient(platform::SocketHandle client) {
              << "</div>"
              << "<div class='actions'>"
              << "<a href='/' class='btn btn-primary'><svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-9.21l5.67-5.67'/></svg> Refresh Data</a>"
-             << "<a href='/stop' class='btn btn-danger' onclick='return confirm(\"Are you sure you want to trigger a graceful shutdown? Active transfers will be permitted to finish.\");'><svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10'/></svg> Shutdown Cluster</a>"
+             << "<a href='#' class='btn btn-danger' onclick='var p = prompt(\"Enter Admin Password to Shutdown:\"); if(p) window.location.href=\"/stop?key=\"+p; return false;'><svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10'/></svg> Shutdown Cluster</a>"
              << "</div>";
     }
 
