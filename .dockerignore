@@ -1,0 +1,8 @@
+build/
+.vscode/
+.git/
+.gitignore
+*.exe
+*.log
+ftproot/
+tests/
