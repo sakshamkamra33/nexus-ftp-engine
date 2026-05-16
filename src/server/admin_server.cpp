@@ -118,7 +118,12 @@ void AdminServer::handleClient(platform::SocketHandle client) {
          << "@media (max-width: 600px) { .dashboard { padding: 24px; } h1 { font-size: 2rem; } .stat-value { font-size: 2rem; } .actions { flex-direction: column; } .btn { width: 100%; justify-content: center; } }"
          << "</style></head><body>"
          << "<div class='dashboard'>"
-         << "<div class='header'><h1>NexusFTP Engine</h1><div class='subtitle'>Live Real-Time Telemetry</div></div>";
+         << "<div class='header'><h1>NexusFTP Engine</h1><div class='subtitle'>Live Real-Time Telemetry</div>"
+         << "<div style='margin-top:15px; padding:12px 20px; background:rgba(56,189,248,0.05); border-radius:12px; border:1px solid rgba(56,189,248,0.2); display:inline-block; text-align:center;'>"
+         << "<div style='font-size:0.85rem; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;'>Test the Backend</div>"
+         << "<code style='color:var(--accent); font-family:monospace; font-size:1.1rem; padding:4px 8px; background:rgba(0,0,0,0.3); border-radius:6px;'>ftp 204.236.201.82</code>"
+         << "<div style='font-size:0.9rem; color:#f8fafc; margin-top:8px;'>User: <span style='color:var(--success); font-weight:600;'>guest</span> &nbsp;|&nbsp; Pass: <span style='color:var(--success); font-weight:600;'>guest</span></div>"
+         << "</div></div>";
 
     if (doStop) {
         html << "<div style='text-align:center; padding: 40px;'><h2 style='color:var(--success); font-size: 2rem;'>Authentication Successful</h2><p style='color:#94a3b8;'>Initiating graceful shutdown. Flushing sockets and killing thread pool safely.</p></div>";
