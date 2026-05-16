@@ -32,6 +32,22 @@ You can connect to the raw C++ FTP socket using your computer's built-in termina
 
 ---
 
+## 📖 Under the Hood: RFC 959 & The Protocol Mechanics
+Unlike modern web protocols (like HTTP) that use a single connection, this engine strictly implements **RFC 959** (the official File Transfer Protocol specification from 1985). This protocol requires a highly complex, stateful **dual-connection** architecture:
+
+1. **The Control Channel (Port 21):** A persistent TCP connection where the client sends plaintext ASCII commands (`USER`, `PASS`, `CWD`, `RETR`, `STOR`) and the server responds with 3-digit status codes (e.g., `230 Logged in`, `550 File not found`).
+2. **The Data Channel (Passive Mode / `PASV`):** When a client requests a file or a directory list (via `ls`), the Control Channel *cannot* send the data. Instead, the server dynamically opens a brand new, temporary TCP port (e.g., between `50000-50100`), tells the client the IP and Port mathematically, and waits for the client to connect. Once connected, the raw binary file data is blasted over this secondary channel and the socket is immediately destroyed upon completion.
+
+### How NexusFTP Handles Commands
+When you type `ls` in your FTP terminal, here is exactly what the C++ engine is doing:
+1. Your client sends the `PASV` command over Port 21. 
+2. NexusFTP asks the OS for an available ephemeral port, binds a new `SocketHandle` to it, and responds with `227 Entering Passive Mode (204,236,201,82,195,80)` (where the math `195 * 256 + 80` equates to Port `50000`).
+3. Your client silently establishes a secondary TCP connection to Port 50000.
+4. Your client sends the `LIST` command over Port 21.
+5. NexusFTP triggers a thread, reads the local filesystem using OS APIs, formats it into a Unix-style directory string, blasts the raw bytes over Port 50000, and gracefully closes the data socket while keeping your Port 21 session perfectly alive.
+
+---
+
 ## 🏗️ System Architecture
 
 NexusFTP is built on a non-blocking Acceptor model that dispatches incoming TCP connections to a pre-allocated Worker Thread Pool, isolating the I/O of active file transfers from the primary command channel.
