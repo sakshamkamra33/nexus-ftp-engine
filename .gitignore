@@ -1,0 +1,15 @@
+# Build directories
+build/
+.vscode/
+
+# Log files
+*.log
+ftp_server.log
+
+# Upload directories
+ftproot/
+
+# Random test files
+test.txt
+renamed.txt
+upload_test.txt
