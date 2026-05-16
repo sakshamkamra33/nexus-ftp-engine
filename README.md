@@ -189,13 +189,8 @@ This project is open-source and available under the **MIT License**.
 
 ---
 
-## 👨‍💻 Author & Contact
+## 👨‍💻 Author
 
 **Saksham Kamra**
 - **GitHub:** [@sakshamkamra33](https://github.com/sakshamkamra33)
 - **Project Repository:** [nexus-ftp-engine](https://github.com/sakshamkamra33/nexus-ftp-engine)
-
-If you find this project interesting, want to discuss systems programming, or have any questions about the C++ architecture, feel free to reach out!
-
----
-*Built with passion in C++14.*
