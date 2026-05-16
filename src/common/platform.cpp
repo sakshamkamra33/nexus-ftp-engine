@@ -25,6 +25,7 @@
   #include <sys/stat.h>
   #include <cerrno>
   #include <cstring>
+  #include <fcntl.h>
 #endif
 
 #include "platform.h"
