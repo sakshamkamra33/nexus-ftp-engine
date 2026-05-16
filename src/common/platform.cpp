@@ -26,6 +26,9 @@
   #include <cerrno>
   #include <cstring>
   #include <fcntl.h>
+  #ifdef __linux__
+    #include <sys/sendfile.h>
+  #endif
 #endif
 
 #include "platform.h"
@@ -402,7 +405,6 @@ bool transmitFile(SocketHandle sock, const std::string& path,
 #else
     // POSIX sendfile (Linux)
     #ifdef __linux__
-    #include <sys/sendfile.h>
     int fd = open(path.c_str(), O_RDONLY);
     if (fd < 0) return false;
 
