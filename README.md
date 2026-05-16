@@ -9,6 +9,14 @@ NexusFTP is a high-performance, low-level FTP server built entirely from scratch
 
 By avoiding high-level networking frameworks (like Boost.Asio), this engine relies purely on OS-level primitives (Win32 API & POSIX) to achieve maximum I/O throughput and minimal CPU overhead.
 
+## ✨ Key Features
+- **Native C++14 Core:** Built without external networking frameworks.
+- **Embedded Web Dashboard:** Real-time telemetry UI served via a custom HTTP/1.1 thread.
+- **RFC 959 Compliant:** Supports modern `PASV` mode data channels and standard commands.
+- **Zero-Copy I/O:** Uses OS-level `sendfile()`/`TransmitFile()` to achieve near wire-speed file transfers.
+- **Cross-Platform:** Compiles seamlessly on Linux (POSIX) and Windows (Win32).
+- **Containerized:** Deployed as a lightweight 50MB Docker image on AWS.
+
 ---
 
 ## 🌟 Live Demo & Telemetry
@@ -131,3 +139,16 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j$(nproc) ftp_server
 ./ftp_server --config ../config/server.conf
 ```
+
+---
+
+## 👨‍💻 Author & Contact
+
+**Saksham Kamra**
+- **GitHub:** [@sakshamkamra33](https://github.com/sakshamkamra33)
+- **Project Repository:** [nexus-ftp-engine](https://github.com/sakshamkamra33/nexus-ftp-engine)
+
+If you find this project interesting, want to discuss systems programming, or have any questions about the C++ architecture, feel free to reach out!
+
+---
+*Built with passion in C++14.*
