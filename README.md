@@ -19,6 +19,16 @@ By avoiding high-level networking frameworks (like Boost.Asio), this engine reli
 
 ---
 
+## 🛠️ Tech Stack
+- **Language:** C++14 (Native, No heavy 3rd-party libraries)
+- **Build System:** CMake, Make
+- **Containerization:** Docker (Multi-stage builds)
+- **Cloud Infrastructure:** AWS EC2 (Ubuntu 22.04), AWS Security Groups
+- **Frontend Dashboard:** HTML5, CSS3 Grid, Glassmorphism UI
+- **Protocols:** TCP/IP, FTP (RFC 959), HTTP/1.1
+
+---
+
 ## 🌟 Live Demo & Telemetry
 
 The FTP server features a custom-built, embedded HTTP engine that serves a real-time React-style telemetry dashboard using vanilla HTML/CSS and CSS Grid!
@@ -139,6 +149,35 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j$(nproc) ftp_server
 ./ftp_server --config ../config/server.conf
 ```
+
+---
+
+## 📁 Project Structure
+
+```text
+nexus-ftp-engine/
+├── CMakeLists.txt           # C++ Build configuration
+├── Dockerfile               # Multi-stage production container
+├── config/
+│   ├── server.conf          # Network and concurrency limits
+│   └── users.conf           # SHA-256 hashed credentials
+├── src/
+│   ├── common/              # Cross-platform abstractions
+│   │   ├── platform.cpp     # Zero-copy & socket implementations
+│   │   └── win32_threads.h  # Mutex/CondVar OS wrappers
+│   └── server/              # Core FTP Logic
+│       ├── ftp_server.cpp   # RFC959 Command Parser
+│       ├── session.cpp      # TCP Connection lifecycle
+│       ├── thread_pool.cpp  # Worker queue management
+│       └── admin_server.cpp # Embedded HTTP Dashboard
+└── tests/                   # Unit & Performance Tests
+```
+
+---
+
+## 📜 License
+
+This project is open-source and available under the **MIT License**.
 
 ---
 
