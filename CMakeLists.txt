@@ -13,7 +13,7 @@ set(COMMON_SOURCES
 set(SERVER_SOURCES
     src/server/thread_pool.cpp
     src/server/auth.cpp
-    src/server\session.cpp
+    src/server/session.cpp
     src/server/admin_server.cpp
     src/server/ftp_server.cpp
     src/server/main.cpp
