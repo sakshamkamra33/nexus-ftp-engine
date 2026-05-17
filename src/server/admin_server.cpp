@@ -64,6 +64,9 @@ void AdminServer::loop() {
         platform::SocketHandle clientSock = platform::acceptConnection(listenSocket_.get());
         if (clientSock == platform::kInvalidSocket) continue;
 
+        // Anti-Slowloris: Set a strict 2-second timeout so web scanners don't freeze the single-threaded Admin loop
+        platform::setRecvTimeout(clientSock, 2);
+
         // Security: Removed local-only restriction to allow public dashboard access
         std::string peerIp = platform::getPeerIp(clientSock);
 
